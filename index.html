@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JLPT N5 日语学习</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',-apple-system,sans-serif;background:#f0f2f8;min-height:100vh;}
+
+/* ── 顶部 Header ── */
+.header{background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);padding:20px 16px 0;color:white;}
+.header h1{font-size:22px;font-weight:900;text-align:center;margin-bottom:2px;letter-spacing:1px;}
+.header p{font-size:12px;text-align:center;opacity:.8;margin-bottom:14px;}
+
+/* ── 主标签（动词/形容词/练习）── */
+.main-tabs{display:flex;gap:4px;padding:0 0 0 0;}
+.main-tab{flex:1;padding:10px 4px;border:none;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:13px;font-weight:700;cursor:pointer;border-radius:10px 10px 0 0;transition:all .2s;}
+.main-tab.active{background:white;color:#1e3a8a;}
+
+/* ── 页面容器 ── */
+.page{display:none;padding:16px;}
+.page.active{display:block;}
+
+/* ── 筛选栏 ── */
+.filter-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.fchip{padding:5px 12px;border-radius:20px;border:2px solid #e0e4f0;background:white;font-size:12px;font-weight:700;color:#666;cursor:pointer;transition:all .2s;}
+.fchip.on{color:white;border-color:transparent;}
+.fchip[data-f="all"].on{background:#334155;}
+.fchip[data-f="一类"].on,.fchip[data-f="イ形"].on{background:#3b82f6;}
+.fchip[data-f="二类"].on,.fchip[data-f="ナ形"].on{background:#10b981;}
+.fchip[data-f="三类"].on{background:#f59e0b;}
+
+.tip{font-size:11px;color:#aaa;text-align:center;margin-bottom:8px;}
+.count-bar{font-size:12px;color:#888;text-align:center;margin-bottom:10px;}
+
+/* ── 通用表格 ── */
+.jtable{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-size:13px;}
+.jtable th{background:#f8faff;padding:9px 8px;text-align:left;font-size:11px;color:#666;font-weight:700;border-bottom:2px solid #e8ecf8;}
+.jtable td{padding:9px 8px;border-bottom:1px solid #f0f2f8;vertical-align:middle;}
+.jtable tr:last-child td{border-bottom:none;}
+.jrow{cursor:pointer;}
+.jrow:hover td{background:#f5f8ff;}
+.jrow.open td{background:#eef3ff;}
+.num{color:#ccc;font-size:11px;width:24px;}
+.jword{font-weight:700;color:#111;font-size:15px;}
+.jread{color:#aaa;font-size:11px;}
+.jmean{color:#444;}
+.jant{font-size:11px;color:#e07b00;background:#fff8ed;padding:1px 7px;border-radius:20px;white-space:nowrap;}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:900;color:white;white-space:nowrap;}
+.b1{background:#3b82f6;} .b2{background:#10b981;} .b3{background:#f59e0b;}
+.bi{background:#6366f1;} .bn{background:#10b981;}
+
+/* ── 展开详情 ── */
+.drow td{padding:0;border-bottom:2px solid #dde3f8;}
+.dbox{padding:14px 16px;border-top:3px solid #3b82f6;background:#f0f5ff;}
+.dbox.gi{border-top-color:#6366f1;background:#f5f3ff;}
+.dbox.gn{border-top-color:#10b981;background:#f0fdf8;}
+
+.dhead{font-size:18px;font-weight:900;color:#111;margin-bottom:10px;}
+.dhead small{font-size:12px;font-weight:400;color:#888;margin-left:6px;}
+.dhead .dant{font-size:12px;color:#e07b00;background:#fff3e0;padding:2px 8px;border-radius:20px;margin-left:8px;}
+
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.ccard{background:white;border-radius:10px;padding:10px 12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.clabel{font-size:10px;color:#aaa;margin-bottom:3px;}
+.cval{font-size:15px;font-weight:800;}
+.cv1{color:#3b82f6;} .cv2{color:#10b981;} .cvi{color:#6366f1;} .cvn{color:#10b981;} .cvd{color:#555;}
+
+.rcard{background:white;border-radius:10px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:10px;}
+.rhead{font-size:11px;font-weight:700;color:#555;margin-bottom:6px;}
+.rbody{font-size:12px;color:#333;line-height:1.9;}
+
+.closebtn{display:block;width:100%;padding:8px;background:#e8ecf8;border:none;border-radius:8px;font-size:13px;color:#555;cursor:pointer;font-weight:700;}
+.closebtn:hover{background:#d5daf0;}
+
+/* ── 练习页 ── */
+.qsetup{background:white;border-radius:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:14px;}
+.qsetup h2{font-size:15px;font-weight:900;color:#1e3a8a;text-align:center;margin-bottom:16px;}
+.srow{margin-bottom:14px;}
+.slabel{font-size:12px;font-weight:700;color:#555;margin-bottom:7px;}
+.sopts{display:flex;flex-wrap:wrap;gap:7px;}
+.sopt{padding:6px 14px;border-radius:20px;border:2px solid #e0e4f0;background:white;cursor:pointer;font-size:12px;font-weight:700;color:#666;transition:all .2s;}
+.sopt.on{background:#3b82f6;color:white;border-color:#3b82f6;}
+
+.startbtn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:white;border:none;border-radius:12px;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:.5px;}
+.startbtn:hover{opacity:.9;}
+
+.qmain{display:none;}
+.qpbar{background:#e5e7eb;border-radius:99px;height:5px;margin-bottom:6px;overflow:hidden;}
+.qpfill{height:100%;background:linear-gradient(90deg,#3b82f6,#6366f1);border-radius:99px;transition:width .3s;}
+.qmeta{display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:14px;}
+
+.qcard{background:white;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.1);margin-bottom:14px;}
+.qtypebadge{font-size:10px;font-weight:900;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:10px;}
+.qtb-v{background:#eff6ff;color:#3b82f6;}
+.qtb-i{background:#f5f3ff;color:#6366f1;}
+.qtb-n{background:#f0fdf4;color:#10b981;}
+
+.qword{font-size:30px;font-weight:900;color:#111;text-align:center;margin-bottom:3px;}
+.qsub{font-size:12px;color:#aaa;text-align:center;margin-bottom:5px;}
+.qquestion{font-size:14px;color:#444;text-align:center;font-weight:700;margin-bottom:18px;}
+
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.obtn{padding:14px 8px;background:#f8faff;border:2px solid #e8ecf8;border-radius:12px;font-size:14px;font-weight:800;color:#222;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3;}
+.obtn:hover:not(:disabled){background:#eff6ff;border-color:#93c5fd;}
+.obtn.ok{background:#d1fae5;border-color:#10b981;color:#065f46;}
+.obtn.ng{background:#fee2e2;border-color:#ef4444;color:#991b1b;}
+.obtn.reveal{background:#d1fae5;border-color:#10b981;color:#065f46;}
+.obtn:disabled{cursor:default;}
+
+.qfb{margin-top:12px;padding:12px;border-radius:10px;font-size:12px;line-height:1.8;display:none;}
+.qfb.ok{background:#d1fae5;color:#065f46;}
+.qfb.ng{background:#fee2e2;color:#991b1b;}
+
+.qnext{display:none;width:100%;margin-top:10px;padding:12px;background:#3b82f6;color:white;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;}
+.qnext:hover{background:#2563eb;}
+
+/* 结果页 */
+.qresult{display:none;background:white;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.1);text-align:center;}
+.rscore{font-size:60px;font-weight:900;margin:8px 0;}
+.rlabel{font-size:13px;color:#888;margin-bottom:16px;}
+.rmsg{font-size:18px;font-weight:900;margin-bottom:4px;}
+.rsub{font-size:12px;color:#666;margin-bottom:18px;}
+.rwrong{text-align:left;margin-bottom:18px;}
+.rwrong h3{font-size:12px;font-weight:700;color:#666;margin-bottom:8px;}
+.witem{background:#fff8ed;border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:12px;line-height:1.8;border-left:3px solid #f59e0b;}
+.wverb{font-size:14px;font-weight:900;color:#111;}
+.wans{color:#10b981;font-weight:700;}
+.wyours{color:#ef4444;}
+.rbtn{display:inline-block;padding:11px 24px;background:#3b82f6;color:white;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;margin:4px;}
+.rbtn2{display:inline-block;padding:11px 24px;background:#e5e7eb;color:#555;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;margin:4px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎌 JLPT N5 日语学习</h1>
+  <p>动词 · 形容词 · 变形练习 · 一站式复习</p>
+  <div class="main-tabs">
+    <button class="main-tab active" onclick="switchMain('verb')">📝 动词</button>
+    <button class="main-tab" onclick="switchMain('adj')">🌸 形容词</button>
+    <button class="main-tab" onclick="switchMain('quiz')">✏️ 练习</button>
+  </div>
+</div>
+
+<!-- ══ 动词页 ══ -->
+<div class="page active" id="page-verb">
+  <div class="filter-bar" id="vfilter">
+    <div class="fchip on" data-f="all">全部</div>
+    <div class="fchip" data-f="一类">一类（五段）</div>
+    <div class="fchip" data-f="二类">二类（一段）</div>
+    <div class="fchip" data-f="三类">三类（不规则）</div>
+  </div>
+  <p class="tip">👆 点击任意行查看变形详情</p>
+  <div class="count-bar" id="vcount"></div>
+  <table class="jtable">
+    <thead><tr>
+      <th style="width:24px">#</th><th>ます形</th><th>原型·注音</th><th>意思</th><th>类别</th>
+    </tr></thead>
+    <tbody id="vtbody"></tbody>
+  </table>
+</div>
+
+<!-- ══ 形容词页 ══ -->
+<div class="page" id="page-adj">
+  <div class="filter-bar" id="afilter">
+    <div class="fchip on" data-f="all">全部</div>
+    <div class="fchip" data-f="イ形">イ形容词</div>
+    <div class="fchip" data-f="ナ形">ナ形容词</div>
+  </div>
+  <p class="tip">👆 点击任意行查看变形详情 · 🔶 = 有反义词</p>
+  <div class="count-bar" id="acount"></div>
+  <table class="jtable">
+    <thead><tr>
+      <th style="width:24px">#</th><th>形容词</th><th>注音</th><th>意思</th><th>反义词</th><th>类型</th>
+    </tr></thead>
+    <tbody id="atbody"></tbody>
+  </table>
+</div>
+
+<!-- ══ 练习页 ══ -->
+<div class="page" id="page-quiz">
+  <div class="qsetup" id="qsetup">
+    <h2>✏️ 变形练习设置</h2>
+    <div class="srow">
+      <div class="slabel">练习范围</div>
+      <div class="sopts" id="s-scope">
+        <div class="sopt on" data-v="all">全部</div>
+        <div class="sopt" data-v="verb">仅动词</div>
+        <div class="sopt" data-v="adj">仅形容词</div>
+      </div>
+    </div>
+    <div class="srow" id="s-vtype-row">
+      <div class="slabel">动词类别</div>
+      <div class="sopts" id="s-vtype">
+        <div class="sopt on" data-v="all">全部</div>
+        <div class="sopt" data-v="一类">一类</div>
+        <div class="sopt" data-v="二类">二类</div>
+        <div class="sopt" data-v="三类">三类</div>
+      </div>
+    </div>
+    <div class="srow" id="s-atype-row">
+      <div class="slabel">形容词类别</div>
+      <div class="sopts" id="s-atype">
+        <div class="sopt on" data-v="all">全部</div>
+        <div class="sopt" data-v="イ形">イ形</div>
+        <div class="sopt" data-v="ナ形">ナ形</div>
+      </div>
+    </div>
+    <div class="srow" id="s-form-row">
+      <div class="slabel">考察变形（可多选）</div>
+      <div class="sopts" id="s-form">
+        <div class="sopt on" data-v="f1">现在否定</div>
+        <div class="sopt on" data-v="f2">过去肯定</div>
+        <div class="sopt on" data-v="f3">过去否定</div>
+        <div class="sopt" data-v="f4">て形（仅动词）</div>
+      </div>
+    </div>
+    <button class="startbtn" onclick="startQuiz()">🚀 开始练习（20题）</button>
+  </div>
+
+  <div class="qmain" id="qmain">
+    <div class="qpbar"><div class="qpfill" id="qpf"></div></div>
+    <div class="qmeta"><span id="qcounter">第1/20题</span><span id="qscore">✅0 ❌0</span></div>
+    <div class="qcard">
+      <div id="qtbadge" class="qtypebadge qtb-v"></div>
+      <div class="qword" id="qword"></div>
+      <div class="qsub" id="qsub"></div>
+      <div class="qquestion" id="qquestion"></div>
+      <div class="opts" id="qopts"></div>
+      <div class="qfb" id="qfb"></div>
+      <button class="qnext" id="qnext" onclick="nextQ()">下一题 →</button>
+    </div>
+  </div>
+
+  <div class="qresult" id="qresult">
+    <div style="font-size:48px" id="remoji"></div>
+    <div class="rscore" id="rscore"></div>
+    <div class="rlabel">/ 20 题正确</div>
+    <div class="rmsg" id="rmsg"></div>
+    <div class="rsub" id="rsub"></div>
+    <div class="rwrong" id="rwrong"></div>
+    <button class="rbtn" onclick="retryQ()">🔁 再练一次</button>
+    <button class="rbtn2" onclick="backSetup()">⚙️ 重新设置</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// 动词数据 [ます形, 原型, 注音, 中文, 类别]
+// ══════════════════════════════════════════════
+const VERBS=[
+  ["あいます","会う","あう","见面","一类"],["あきます","開く","あく","开（自动）","一类"],
+  ["あそびます","遊ぶ","あそぶ","玩耍","一类"],["あらいます","洗う","あらう","洗","一类"],
+  ["あるきます","歩く","あるく","走路","一类"],["いいます","言う","いう","说","一类"],
+  ["いそぎます","急ぐ","いそぐ","着急、赶","一类"],["うたいます","歌う","うたう","唱歌","一类"],
+  ["うります","売る","うる","卖","一类"],["おきます","置く","おく","放置","一类"],
+  ["おくります","送る","おくる","送、寄","一类"],["おします","押す","おす","推、按","一类"],
+  ["およぎます","泳ぐ","およぐ","游泳","一类"],["おわります","終わる","おわる","结束","一类"],
+  ["かえります","帰る","かえる","回去","一类"],["かかります","かかる","かかる","花费","一类"],
+  ["かきます","書く","かく","写","一类"],["かします","貸す","かす","借出","一类"],
+  ["かちます","勝つ","かつ","赢","一类"],["かぶります","被る","かぶる","戴（帽子）","一类"],
+  ["かわります","変わる","かわる","改变","一类"],["ききます","聞く","きく","听、问","一类"],
+  ["きります","切る","きる","切、剪","一类"],["しにます","死ぬ","しぬ","死","一类"],
+  ["しります","知る","しる","知道","一类"],["すいます","吸う","すう","抽（烟）","一类"],
+  ["すわります","座る","すわる","坐","一类"],["たちます","立つ","たつ","站立","一类"],
+  ["たのみます","頼む","たのむ","拜托","一类"],["つかいます","使う","つかう","使用","一类"],
+  ["つきます","着く","つく","到达","一类"],["とります（取）","取る","とる","拿取","一类"],
+  ["とります（撮）","撮る","とる","拍照","一类"],["なきます","泣く","なく","哭","一类"],
+  ["なります","なる","なる","变成","一类"],["ぬぎます","脱ぐ","ぬぐ","脱（衣服）","一类"],
+  ["のみます","飲む","のむ","喝","一类"],["はいります","入る","はいる","进入","一类"],
+  ["はきます","履く","はく","穿（鞋/裤）","一类"],["はじまります","始まる","はじまる","开始（自动）","一类"],
+  ["はしります","走る","はしる","跑","一类"],["はたらきます","働く","はたらく","工作","一类"],
+  ["はなします","話す","はなす","说话","一类"],["ひきます","弾く","ひく","弹（乐器）","一类"],
+  ["ふります","降る","ふる","下（雨/雪）","一类"],["まがります","曲がる","まがる","拐弯","一类"],
+  ["まちます","待つ","まつ","等待","一类"],["もちます","持つ","もつ","拿、持有","一类"],
+  ["やすみます","休む","やすむ","休息","一类"],["よびます","呼ぶ","よぶ","叫、邀请","一类"],
+  ["よみます","読む","よむ","阅读","一类"],["わかります","分かる","わかる","明白、懂","一类"],
+  ["わたします","渡す","わたす","交给","一类"],["あります","ある","ある","有（物）","一类"],
+  ["いきます","行く","いく","去","一类"],["のります","乗る","のる","乘坐","一类"],
+  ["あけます","開ける","あける","打开","二类"],["あびます","浴びる","あびる","淋浴","二类"],
+  ["いれます","入れる","いれる","放入","二类"],["うまれます","生まれる","うまれる","出生","二类"],
+  ["おきます","起きる","おきる","起床","二类"],["おしえます","教える","おしえる","教、告诉","二类"],
+  ["おぼえます","覚える","おぼえる","记住","二类"],["おります","降りる","おりる","下（车）","二类"],
+  ["かけます","かける","かける","打电话、挂","二类"],["かります","借りる","かりる","借入","二类"],
+  ["きます","着る","きる","穿（上衣）","二类"],["しめます","閉める","しめる","关闭","二类"],
+  ["しらべます","調べる","しらべる","调查","二类"],["すてます","捨てる","すてる","扔掉","二类"],
+  ["たべます","食べる","たべる","吃","二类"],["つかれます","疲れる","つかれる","累","二类"],
+  ["つけます","つける","つける","开（电器）","二类"],["でかけます","出かける","でかける","外出","二类"],
+  ["できます","できる","できる","能、会","二类"],["でます","出る","でる","出去","二类"],
+  ["とめます","止める","とめる","停、关掉","二类"],["ねます","寝る","ねる","睡觉","二类"],
+  ["はじめます","始める","はじめる","开始（他动）","二类"],["みせます","見せる","みせる","给…看","二类"],
+  ["みます","見る","みる","看","二类"],["むかえます","迎える","むかえる","迎接","二类"],
+  ["やめます","やめる","やめる","停止、辞职","二类"],["わすれます","忘れる","わすれる","忘记","二类"],
+  ["います","いる","いる","有（人/动物）","二类"],["きえます","消える","きえる","消失","二类"],
+  ["つとめます","勤める","つとめる","在…工作","二类"],["あつめます","集める","あつめる","收集","二类"],
+  ["かんがえます","考える","かんがえる","思考","二类"],["きめます","決める","きめる","决定","二类"],
+  ["こたえます","答える","こたえる","回答","二类"],["まちがえます","間違える","まちがえる","弄错","二类"],
+  ["つづけます","続ける","つづける","继续","二类"],
+  ["きます","来る","くる","来","三类"],["します","する","する","做","三类"],
+  ["べんきょうします","勉強する","べんきょうする","学习","三类"],
+  ["でんわします","電話する","でんわする","打电话","三类"],
+  ["さんぽします","散歩する","さんぽする","散步","三类"],
+  ["りょこうします","旅行する","りょこうする","旅行","三类"],
+  ["かいものします","買い物する","かいものする","购物","三类"],
+  ["しょくじします","食事する","しょくじする","用餐","三类"],
+  ["うんどうします","運動する","うんどうする","运动","三类"],
+  ["そうじします","掃除する","そうじする","打扫","三类"],
+  ["せんたくします","洗濯する","せんたくする","洗衣服","三类"],
+  ["りょうりします","料理する","りょうりする","做料理","三类"],
+  ["れんしゅうします","練習する","れんしゅうする","练习","三类"],
+  ["よやくします","予約する","よやくする","预约","三类"],
+  ["しょうかいします","紹介する","しょうかいする","介绍","三类"],
+  ["せつめいします","説明する","せつめいする","说明","三类"],
+];
+
+// ══════════════════════════════════════════════
+// 形容词数据 [词, 注音, 中文, 类型, 反义词, 反义词注音]
+// ══════════════════════════════════════════════
+const ADJS=[
+  // イ形容词
+  ["あかい","あかい","红色的","イ形","",""],
+  ["あおい","あおい","蓝/绿色的","イ形","",""],
+  ["しろい","しろい","白色的","イ形","くろい","くろい"],
+  ["くろい","くろい","黑色的","イ形","しろい","しろい"],
+  ["あたらしい","あたらしい","新的","イ形","ふるい","ふるい"],
+  ["ふるい","ふるい","旧的、老的","イ形","あたらしい","あたらしい"],
+  ["おおきい","おおきい","大的","イ形","ちいさい","ちいさい"],
+  ["ちいさい","ちいさい","小的","イ形","おおきい","おおきい"],
+  ["たかい","たかい","高的、贵的","イ形","ひくい/やすい","ひくい/やすい"],
+  ["ひくい","ひくい","低的","イ形","たかい","たかい"],
+  ["やすい","やすい","便宜的","イ形","たかい","たかい"],
+  ["たのしい","たのしい","快乐的","イ形","つまらない","つまらない"],
+  ["つまらない","つまらない","无聊的","イ形","たのしい","たのしい"],
+  ["おもしろい","おもしろい","有趣的","イ形","つまらない","つまらない"],
+  ["おいしい","おいしい","好吃的","イ形","まずい","まずい"],
+  ["まずい","まずい","难吃的","イ形","おいしい","おいしい"],
+  ["あつい","あつい","热的","イ形","さむい/つめたい","さむい/つめたい"],
+  ["さむい","さむい","冷的（天气）","イ形","あつい","あつい"],
+  ["つめたい","つめたい","冰凉的（触感）","イ形","あつい","あつい"],
+  ["あたたかい","あたたかい","温暖的","イ形","すずしい","すずしい"],
+  ["すずしい","すずしい","凉爽的","イ形","あたたかい","あたたかい"],
+  ["むずかしい","むずかしい","难的","イ形","やさしい","やさしい"],
+  ["やさしい","やさしい","简单的、温柔的","イ形","むずかしい","むずかしい"],
+  ["いい／よい","いい/よい","好的","イ形","わるい","わるい"],
+  ["わるい","わるい","坏的","イ形","いい","いい"],
+  ["はやい","はやい","快的、早的","イ形","おそい","おそい"],
+  ["おそい","おそい","慢的、晚的","イ形","はやい","はやい"],
+  ["ながい","ながい","长的","イ形","みじかい","みじかい"],
+  ["みじかい","みじかい","短的","イ形","ながい","ながい"],
+  ["おおい","おおい","多的","イ形","すくない","すくない"],
+  ["すくない","すくない","少的","イ形","おおい","おおい"],
+  ["とおい","とおい","远的","イ形","ちかい","ちかい"],
+  ["ちかい","ちかい","近的","イ形","とおい","とおい"],
+  ["ひろい","ひろい","宽广的","イ形","せまい","せまい"],
+  ["せまい","せまい","狭窄的","イ形","ひろい","ひろい"],
+  ["おもい","おもい","重的","イ形","かるい","かるい"],
+  ["かるい","かるい","轻的","イ形","おもい","おもい"],
+  ["あぶない","あぶない","危险的","イ形","",""],
+  ["うれしい","うれしい","高兴的","イ形","かなしい","かなしい"],
+  ["かなしい","かなしい","悲伤的","イ形","うれしい","うれしい"],
+  ["いそがしい","いそがしい","忙的","イ形","ひまな","ひまな"],
+  ["つよい","つよい","强的","イ形","よわい","よわい"],
+  ["よわい","よわい","弱的","イ形","つよい","つよい"],
+  ["あかるい","あかるい","明亮的","イ形","くらい","くらい"],
+  ["くらい","くらい","暗的","イ形","あかるい","あかるい"],
+  ["からい","からい","辣的","イ形","あまい","あまい"],
+  ["あまい","あまい","甜的","イ形","からい","からい"],
+  ["かわいい","かわいい","可爱的","イ形","",""],
+  ["きたない","きたない","脏的","イ形","きれいな","きれいな"],
+  ["さびしい","さびしい","寂寞的","イ形","",""],
+  ["やわらかい","やわらかい","软的","イ形","かたい","かたい"],
+  ["かたい","かたい","硬的","イ形","やわらかい","やわらかい"],
+  // ナ形容词
+  ["きれいな","きれいな","漂亮的、干净的","ナ形","きたない","きたない"],
+  ["すきな","すきな","喜欢的","ナ形","きらいな","きらいな"],
+  ["きらいな","きらいな","讨厌的","ナ形","すきな","すきな"],
+  ["じょうずな","じょうずな","擅长的","ナ形","へたな","へたな"],
+  ["へたな","へたな","不擅长的","ナ形","じょうずな","じょうずな"],
+  ["しずかな","しずかな","安静的","ナ形","にぎやかな","にぎやかな"],
+  ["にぎやかな","にぎやかな","热闹的","ナ形","しずかな","しずかな"],
+  ["げんきな","げんきな","有精神的","ナ形","",""],
+  ["ひまな","ひまな","空闲的","ナ形","いそがしい","いそがしい"],
+  ["べんりな","べんりな","方便的","ナ形","ふべんな","ふべんな"],
+  ["ふべんな","ふべんな","不方便的","ナ形","べんりな","べんりな"],
+  ["たいせつな","たいせつな","重要的、珍贵的","ナ形","",""],
+  ["いろいろな","いろいろな","各种各样的","ナ形","",""],
+  ["すてきな","すてきな","漂亮的、棒的","ナ形","",""],
+  ["だいじょうぶな","だいじょうぶな","没问题的","ナ形","",""],
+  ["とくべつな","とくべつな","特别的","ナ形","",""],
+  ["ゆうめいな","ゆうめいな","有名的","ナ形","",""],
+  ["かんたんな","かんたんな","简单的","ナ形","むずかしい","むずかしい"],
+  ["しんせつな","しんせつな","亲切的","ナ形","",""],
+  ["まじめな","まじめな","认真的","ナ形","",""],
+];
+
+// ══════════════════════════════════════════════
+// 变形引擎
+// ══════════════════════════════════════════════
+function conjVerb(dict,type){
+  if(type==="三类"){
+    if(dict==="する") return {masu:"します",nai:"しない",te:"して",ta:"した",rT:"三类（サ变）— する",rB:"する完全不规则，整体死记：<br>ます→<b>します</b>　ない→<b>しない</b>　て→<b>して</b>　た→<b>した</b>"};
+    if(dict==="来る") return {masu:"きます",nai:"こない",te:"きて",ta:"きた",rT:"三类（カ变）— 来る",rB:"来る完全不规则：<br>ます→<b>きます</b>　ない→<b>こない</b>（注意！）　て→<b>きて</b>　た→<b>きた</b>"};
+    const s=dict.replace(/する$/,"");
+    return{masu:s+"します",nai:s+"しない",te:s+"して",ta:s+"した",rT:`三类（サ变）— ${s}+する`,rB:`词干「${s}」+ する 固定变形：<br>${s}<b>します</b> / ${s}<b>しない</b> / ${s}<b>して</b> / ${s}<b>した</b>`};
+  }
+  if(type==="二类"){
+    const s=dict.replace(/る$/,"");
+    return{masu:s+"ます",nai:s+"ない",te:s+"て",ta:s+"た",rT:"二类（一段）— 最简单",rB:`去掉「る」直接加词尾。词干「${s}」：<br><b>${s}ます</b> / <b>${s}ない</b> / <b>${s}て</b> / <b>${s}た</b>`};
+  }
+  const e=dict.slice(-1),s=dict.slice(0,-1);
+  const im={う:"い",く:"き",ぐ:"ぎ",す:"し",つ:"ち",ぬ:"に",ぶ:"び",む:"み",る:"り"};
+  const am={う:"わ",く:"か",ぐ:"が",す:"さ",つ:"た",ぬ:"な",ぶ:"ば",む:"ま",る:"ら"};
+  let te,ta,tn;
+  if(dict==="行く"){te="行って";ta="行った";tn="⚠️例外：行く→<b>行って</b>";}
+  else if(e==="く"){te=s+"いて";ta=s+"いた";tn="く→いて";}
+  else if(e==="ぐ"){te=s+"いで";ta=s+"いだ";tn="ぐ→いで";}
+  else if(e==="す"){te=s+"して";ta=s+"した";tn="す→して";}
+  else if(["む","ぶ","ぬ"].includes(e)){te=s+"んで";ta=s+"んだ";tn="む/ぶ/ぬ→んで";}
+  else{te=s+"って";ta=s+"った";tn="る/う/つ→って";}
+  const mf=s+(im[e]||e)+"ます",nf=s+(am[e]||e)+"ない";
+  return{masu:mf,nai:nf,te,ta,rT:"一类（五段）变形规则",rB:`①ます：${e}→${im[e]||e}+ます→<b>${mf}</b><br>②ない：${e}→${am[e]||e}+ない→<b>${nf}</b><br>③て形（${tn}）→<b>${te}</b>　た形→<b>${ta}</b><br><br>📌口诀：く→いて　ぐ→いで　す→して　む/ぶ/ぬ→んで　る/う/つ→って`};
+}
+
+function conjAdj(word,type){
+  // イ形：いい/よい特殊
+  if(type==="イ形"){
+    const isII=(word==="いい／よい"||word==="いい"||word==="よい");
+    if(isII) return{
+      nai:"よくない",ta:"よかった",taN:"よくなかった",te:"よくて",
+      rT:"イ形容词「いい/よい」— 特殊变形",
+      rB:"「いい」变形时必须用「よい」的词干：<br>否定：<b>よくない</b>　过去：<b>よかった</b>　过去否定：<b>よくなかった</b>　て形：<b>よくて</b>"
+    };
+    const stem=word.replace(/い$/,"");
+    return{
+      nai:stem+"くない",ta:stem+"かった",taN:stem+"くなかった",te:stem+"くて",
+      rT:"イ形容词变形规则",
+      rB:`词干「${stem}」（去掉い）：<br>否定：${stem}<b>くない</b>　过去：${stem}<b>かった</b>　过去否定：${stem}<b>くなかった</b>　て形：${stem}<b>くて</b>`
+    };
+  }
+  // ナ形
+  const stem=word.replace(/な$/,"");
+  return{
+    nai:stem+"じゃない",ta:stem+"だった",taN:stem+"じゃなかった",te:stem+"で",
+    rT:"ナ形容词变形规则",
+    rB:`词干「${stem}」（去掉な）：<br>否定：${stem}<b>じゃない</b>　过去：${stem}<b>だった</b>　过去否定：${stem}<b>じゃなかった</b>　て形：${stem}<b>で</b>`
+  };
+}
+
+// ══════════════════════════════════════════════
+// 主标签切换
+// ══════════════════════════════════════════════
+function switchMain(tab){
+  document.querySelectorAll('.main-tab').forEach((b,i)=>{
+    b.classList.toggle('active',['verb','adj','quiz'][i]===tab);
+  });
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+tab).classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// 动词列表
+// ══════════════════════════════════════════════
+let vopenIdx=null;
+function vcloseDet(i){
+  document.getElementById('vd-'+i)?.remove();
+  document.getElementById('vr-'+i)?.classList.remove('open');
+  if(vopenIdx===i)vopenIdx=null;
+}
+function vopenDet(v,i){
+  const c=conjVerb(v[1],v[4]);
+  const tC=v[4]==="一类"?"":"t"+(v[4]==="二类"?"2":"3");
+  const vC=v[4]==="一类"?"cv1":v[4]==="二类"?"cv2":"cvd";
+  const tr=document.createElement('tr');tr.className='drow';tr.id='vd-'+i;
+  tr.innerHTML=`<td colspan="5"><div class="dbox ${tC}">
+    <div class="dhead">${v[1]} <small>${v[2]}　${v[3]}</small></div>
+    <div class="cgrid">
+      <div class="ccard"><div class="clabel">✅ ます形</div><div class="cval ${vC}">${c.masu}</div></div>
+      <div class="ccard"><div class="clabel">❌ ない形</div><div class="cval cvd">${c.nai}</div></div>
+      <div class="ccard"><div class="clabel">🔗 て形</div><div class="cval ${vC}">${c.te}</div></div>
+      <div class="ccard"><div class="clabel">⏪ た形</div><div class="cval cvd">${c.ta}</div></div>
+    </div>
+    <div class="rcard"><div class="rhead">📌 ${c.rT}</div><div class="rbody">${c.rB}</div></div>
+    <button class="closebtn" onclick="vcloseDet(${i})">▲ 收起</button>
+  </div></td>`;
+  const vr=document.getElementById('vr-'+i);
+  vr.classList.add('open');vr.insertAdjacentElement('afterend',tr);
+  vopenIdx=i;
+  setTimeout(()=>tr.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function vtoggle(v,i){
+  if(vopenIdx!==null&&vopenIdx!==i)vcloseDet(vopenIdx);
+  if(document.getElementById('vd-'+i)){vcloseDet(i);return;}
+  vopenDet(v,i);
+}
+function renderVerbs(f){
+  if(vopenIdx!==null)vcloseDet(vopenIdx);
+  const list=VERBS.map((v,i)=>({v,i})).filter(({v})=>f==='all'||v[4]===f);
+  document.getElementById('vcount').textContent=`显示 ${list.length} 个动词`;
+  const tb=document.getElementById('vtbody');tb.innerHTML='';
+  list.forEach(({v,i},n)=>{
+    const bc=v[4]==='一类'?'b1':v[4]==='二类'?'b2':'b3';
+    const bl=v[4]==='一类'?'一类（五段）':v[4]==='二类'?'二类（一段）':'三类（不规则）';
+    const tr=document.createElement('tr');tr.className='jrow';tr.id='vr-'+i;
+    tr.innerHTML=`<td class="num">${n+1}</td><td class="jword">${v[0]}</td><td><div class="jword" style="font-size:13px">${v[1]}</div><div class="jread">${v[2]}</div></td><td class="jmean">${v[3]}</td><td><span class="badge ${bc}">${bl}</span></td>`;
+    tr.addEventListener('click',()=>vtoggle(v,i));
+    tb.appendChild(tr);
+  });
+}
+document.querySelectorAll('#vfilter .fchip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('#vfilter .fchip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');renderVerbs(c.dataset.f);
+  });
+});
+renderVerbs('all');
+
+// ══════════════════════════════════════════════
+// 形容词列表
+// ══════════════════════════════════════════════
+let aopenIdx=null;
+function acloseDet(i){
+  document.getElementById('ad-'+i)?.remove();
+  document.getElementById('ar-'+i)?.classList.remove('open');
+  if(aopenIdx===i)aopenIdx=null;
+}
+function aopenDet(a,i){
+  const c=conjAdj(a[0],a[3]);
+  const gC=a[3]==="イ形"?"gi":"gn";
+  const vC=a[3]==="イ形"?"cvi":"cvn";
+  const antHtml=a[4]?`<span class="dant">反义词：${a[4]}（${a[5]}）</span>`:'';
+  const tr=document.createElement('tr');tr.className='drow';tr.id='ad-'+i;
+  tr.innerHTML=`<td colspan="6"><div class="dbox ${gC}">
+    <div class="dhead">${a[0]} <small>${a[1]}　${a[2]}</small>${antHtml}</div>
+    <div class="cgrid">
+      <div class="ccard"><div class="clabel">✅ 现在肯定</div><div class="cval ${vC}">${a[0]}です</div></div>
+      <div class="ccard"><div class="clabel">❌ 现在否定</div><div class="cval cvd">${c.nai}です</div></div>
+      <div class="ccard"><div class="clabel">⏪ 过去肯定</div><div class="cval ${vC}">${c.ta}です</div></div>
+      <div class="ccard"><div class="clabel">⏪❌ 过去否定</div><div class="cval cvd">${c.taN}です</div></div>
+    </div>
+    <div class="rcard"><div class="rhead">📌 ${c.rT}</div><div class="rbody">${c.rB}</div></div>
+    <button class="closebtn" onclick="acloseDet(${i})">▲ 收起</button>
+  </div></td>`;
+  const ar=document.getElementById('ar-'+i);
+  ar.classList.add('open');ar.insertAdjacentElement('afterend',tr);
+  aopenIdx=i;
+  setTimeout(()=>tr.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function atoggle(a,i){
+  if(aopenIdx!==null&&aopenIdx!==i)acloseDet(aopenIdx);
+  if(document.getElementById('ad-'+i)){acloseDet(i);return;}
+  aopenDet(a,i);
+}
+function renderAdjs(f){
+  if(aopenIdx!==null)acloseDet(aopenIdx);
+  const list=ADJS.map((a,i)=>({a,i})).filter(({a})=>f==='all'||a[3]===f);
+  document.getElementById('acount').textContent=`显示 ${list.length} 个形容词`;
+  const tb=document.getElementById('atbody');tb.innerHTML='';
+  list.forEach(({a,i},n)=>{
+    const bc=a[3]==='イ形'?'bi':'bn';
+    const tr=document.createElement('tr');tr.className='jrow';tr.id='ar-'+i;
+    const antCell=a[4]?`<td><span class="jant">↔ ${a[4]}</span></td>`:'<td></td>';
+    tr.innerHTML=`<td class="num">${n+1}</td><td class="jword" style="font-size:15px">${a[0]}</td><td class="jread">${a[1]}</td><td class="jmean">${a[2]}</td>${antCell}<td><span class="badge ${bc}">${a[3]}</span></td>`;
+    tr.addEventListener('click',()=>atoggle(a,i));
+    tb.appendChild(tr);
+  });
+}
+document.querySelectorAll('#afilter .fchip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('#afilter .fchip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');renderAdjs(c.dataset.f);
+  });
+});
+renderAdjs('all');
+
+// ══════════════════════════════════════════════
+// 练习模式
+// ══════════════════════════════════════════════
+document.querySelectorAll('#s-scope .sopt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('#s-scope .sopt').forEach(e=>e.classList.remove('on'));
+    el.classList.add('on');
+    const v=el.dataset.v;
+    document.getElementById('s-vtype-row').style.display=v==='adj'?'none':'';
+    document.getElementById('s-atype-row').style.display=v==='verb'?'none':'';
+  });
+});
+document.querySelectorAll('#s-vtype .sopt,#s-atype .sopt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const par=el.closest('.sopts');
+    par.querySelectorAll('.sopt').forEach(e=>e.classList.remove('on'));
+    el.classList.add('on');
+  });
+});
+document.querySelectorAll('#s-form .sopt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const wasSel=el.classList.contains('on');
+    const sel=document.querySelectorAll('#s-form .sopt.on').length;
+    if(wasSel&&sel<=1)return;
+    el.classList.toggle('on');
+  });
+});
+
+const FORM_LABELS={
+  // 动词
+  nai_v:"ない形（现在否定）",ta_v:"た形（过去肯定）",te_v:"て形（连接）",
+  // 形容词
+  nai_a:"否定形",ta_a:"过去肯定",taN_a:"过去否定"
+};
+
+let Qs=[],qIdx=0,qOk=0,qNg=0,qWrong=[];
+
+function shuffle(a){return a.slice().sort(()=>Math.random()-.5);}
+
+function buildQs(){
+  const scope=document.querySelector('#s-scope .sopt.on').dataset.v;
+  const vtype=document.querySelector('#s-vtype .sopt.on').dataset.v;
+  const atype=document.querySelector('#s-atype .sopt.on').dataset.v;
+  const forms=[...document.querySelectorAll('#s-form .sopt.on')].map(e=>e.dataset.v);
+
+  let pool=[];
+  if(scope!=='adj'){
+    const vp=vtype==='all'?VERBS:VERBS.filter(v=>v[4]===vtype);
+    vp.forEach(v=>{
+      const c=conjVerb(v[1],v[4]);
+      forms.forEach(f=>{
+        if(f==='f1') pool.push({word:v[1],read:v[2],mean:v[3],kind:'verb',type:v[4],fkey:'nai_v',answer:c.nai,conj:c});
+        if(f==='f2') pool.push({word:v[1],read:v[2],mean:v[3],kind:'verb',type:v[4],fkey:'ta_v',answer:c.ta,conj:c});
+        if(f==='f3') pool.push({word:v[1],read:v[2],mean:v[3],kind:'verb',type:v[4],fkey:'te_v',answer:c.te,conj:c});
+        if(f==='f4') pool.push({word:v[1],read:v[2],mean:v[3],kind:'verb',type:v[4],fkey:'te_v',answer:c.te,conj:c});
+      });
+    });
+  }
+  if(scope!=='verb'){
+    const ap=atype==='all'?ADJS:ADJS.filter(a=>a[3]===atype);
+    ap.forEach(a=>{
+      const c=conjAdj(a[0],a[3]);
+      forms.forEach(f=>{
+        if(f==='f1') pool.push({word:a[0],read:a[1],mean:a[2],kind:'adj',type:a[3],fkey:'nai_a',answer:c.nai+'です',conj:c});
+        if(f==='f2') pool.push({word:a[0],read:a[1],mean:a[2],kind:'adj',type:a[3],fkey:'ta_a',answer:c.ta+'です',conj:c});
+        if(f==='f3') pool.push({word:a[0],read:a[1],mean:a[2],kind:'adj',type:a[3],fkey:'taN_a',answer:c.taN+'です',conj:c});
+      });
+    });
+  }
+  if(pool.length<4){alert('词汇数量不足，请扩大范围');return false;}
+  const picked=shuffle(pool).slice(0,20);
+  Qs=picked.map(q=>{
+    const sameKind=pool.filter(p=>p.answer!==q.answer&&p.kind===q.kind&&p.fkey===q.fkey);
+    const dist=shuffle(sameKind).map(p=>p.answer).filter((x,i,a)=>a.indexOf(x)===i).slice(0,3);
+    return{...q,opts:shuffle([q.answer,...dist])};
+  });
+  return true;
+}
+
+function startQuiz(){
+  if(!buildQs())return;
+  qIdx=0;qOk=0;qNg=0;qWrong=[];
+  document.getElementById('qsetup').style.display='none';
+  document.getElementById('qmain').style.display='block';
+  document.getElementById('qresult').style.display='none';
+  showQ();
+}
+function showQ(){
+  const q=Qs[qIdx];
+  document.getElementById('qpf').style.width=(qIdx/20*100)+'%';
+  document.getElementById('qcounter').textContent=`第${qIdx+1}/20题`;
+  document.getElementById('qscore').textContent=`✅${qOk} ❌${qNg}`;
+  const badge=document.getElementById('qtbadge');
+  if(q.kind==='verb'){
+    badge.textContent=q.type==='一类'?'一类（五段）':q.type==='二类'?'二类（一段）':'三类（不规则）';
+    badge.className='qtypebadge qtb-v';
+  } else {
+    badge.textContent=q.type;
+    badge.className='qtypebadge '+(q.type==='イ形'?'qtb-i':'qtb-n');
+  }
+  document.getElementById('qword').textContent=q.word;
+  document.getElementById('qsub').textContent=`${q.read}　${q.mean}`;
+  document.getElementById('qquestion').textContent=`请选出正确的「${FORM_LABELS[q.fkey]}」`;
+  const od=document.getElementById('qopts');od.innerHTML='';
+  q.opts.forEach(opt=>{
+    const b=document.createElement('button');b.className='obtn';b.textContent=opt;
+    b.addEventListener('click',()=>pickAns(opt,b));
+    od.appendChild(b);
+  });
+  document.getElementById('qfb').style.display='none';
+  document.getElementById('qnext').style.display='none';
+}
+function pickAns(chosen,btn){
+  const q=Qs[qIdx];
+  const ok=chosen===q.answer;
+  document.querySelectorAll('.obtn').forEach(b=>{b.disabled=true;if(b.textContent===q.answer)b.classList.add('reveal');});
+  if(ok){qOk++;btn.classList.add('ok');}else{qNg++;btn.classList.add('ng');qWrong.push({q,chosen});}
+  document.getElementById('qscore').textContent=`✅${qOk} ❌${qNg}`;
+  const fb=document.getElementById('qfb');
+  fb.className='qfb '+(ok?'ok':'ng');
+  fb.innerHTML=ok?`✅ 正确！<br>📌 ${q.conj.rT}`:`❌ 正确答案：<b>${q.answer}</b><br>📌 ${q.conj.rT}`;
+  fb.style.display='block';
+  const nb=document.getElementById('qnext');nb.textContent=qIdx===19?'查看结果 🎉':'下一题 →';nb.style.display='block';
+}
+function nextQ(){qIdx++;if(qIdx>=20){showResult();}else showQ();}
+function showResult(){
+  document.getElementById('qmain').style.display='none';
+  document.getElementById('qresult').style.display='block';
+  document.getElementById('qpf').style.width='100%';
+  const s=document.getElementById('rscore');
+  s.textContent=qOk;
+  s.style.color=qOk>=18?'#10b981':qOk>=14?'#3b82f6':qOk>=10?'#f59e0b':'#ef4444';
+  const msgs=[[20,'🏆','满分！完美！','所有变形都掌握了，太厉害了！'],[18,'🎉','非常优秀！','离满分只差一点，继续加油！'],[14,'👍','不错哦！','大部分掌握了，再练几次就稳了！'],[10,'📖','继续努力！','还有些变形需要巩固，不要放弃！'],[0,'💪','加油！','多看变形规则，再来一次！']];
+  const [,e,m,sub]=msgs.find(([min])=>qOk>=min);
+  document.getElementById('remoji').textContent=e;
+  document.getElementById('rmsg').textContent=m;
+  document.getElementById('rsub').textContent=sub;
+  const wd=document.getElementById('rwrong');
+  wd.innerHTML=qWrong.length?`<h3>❌ 错题（${qWrong.length}题）</h3>`+qWrong.map(({q,chosen})=>`<div class="witem"><div class="wverb">${q.word}（${q.read}）${q.mean}</div><div>题目：${FORM_LABELS[q.fkey]}</div><div class="wans">✅ 正确：${q.answer}</div><div class="wyours">❌ 你选：${chosen}</div></div>`).join(''):'';
+}
+function retryQ(){
+  if(!buildQs())return;
+  qIdx=0;qOk=0;qNg=0;qWrong=[];
+  document.getElementById('qresult').style.display='none';
+  document.getElementById('qmain').style.display='block';
+  showQ();
+}
+function backSetup(){
+  document.getElementById('qresult').style.display='none';
+  document.getElementById('qmain').style.display='none';
+  document.getElementById('qsetup').style.display='block';
+}
+</script>
+</body>
+</html>
